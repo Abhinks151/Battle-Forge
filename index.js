@@ -2,41 +2,41 @@ import promptSync from "prompt-sync";
 
 const prompt = promptSync();
 
-let playerHealth = 100;
-let enemyHealth = 100;
+let PLAYER_HEALTH = 100;
+let ENEMY_HEALTH = 100;
 
-let damageAmount = 10;
-let reviveHealth = 5;
+const DAMAGE_AMOUNT = 10;
+const REVIVE_HEALTH = 5;
 
-const barLength = 15;
-const max = 100;
+const BAR_LENGTH = 15;
+const MAX_HEALTH = 100;
 
 // console.log(`
 // ┌───────────────────────────────┐
 // │         👹 ENEMY              │
 // │                               │
-// │ HP  ${enemyBar}  ${enemyHealth} / ${max} │
+// │ HP  ${enemyBar}  ${ENEMY_HEALTH} / ${max} │
 // └───────────────────────────────┘
 //              ⚔
 // ┌───────────────────────────────┐
 // │         🧙 YOU                │
 // │                               │
-// │ HP  ${playerBar}  ${playerHealth} / ${max} │
+// │ HP  ${playerBar}  ${PLAYER_HEALTH} / ${max} │
 // └───────────────────────────────┘`);
 
-while (true) {
+function renderScore() {
   // update  hp bar
-  const enemyPercentage = enemyHealth / max;
+  const enemyPercentage = ENEMY_HEALTH / MAX_HEALTH;
 
-  const enemyFilled = Math.round(enemyPercentage * barLength);
-  const enemyEmpty = barLength - enemyFilled;
+  const enemyFilled = Math.round(enemyPercentage * BAR_LENGTH);
+  const enemyEmpty = BAR_LENGTH - enemyFilled;
 
   const enemyBar = "█".repeat(enemyFilled) + "░".repeat(enemyEmpty);
 
-  const playerPercentage = playerHealth / max;
+  const playerPercentage = PLAYER_HEALTH / MAX_HEALTH;
 
-  const filled = Math.round(playerPercentage * barLength);
-  const playerEmpty = barLength - filled;
+  const filled = Math.round(playerPercentage * BAR_LENGTH);
+  const playerEmpty = BAR_LENGTH - filled;
 
   const playerBar = "█".repeat(filled) + "░".repeat(playerEmpty);
 
@@ -48,19 +48,78 @@ while (true) {
 ┌───────────────────────────────┐
 │            ENEMY              │
 │                               │
-│ HP  ${enemyBar}  ${enemyHealth} / ${max} │
+│ HP  ${enemyBar}  ${ENEMY_HEALTH} / ${MAX_HEALTH} │
 └───────────────────────────────┘
              ⚔ 
 ┌───────────────────────────────┐
 │            YOU                │
 │                               │
-│ HP  ${playerBar}  ${playerHealth} / ${max} │
+│ HP  ${playerBar}  ${PLAYER_HEALTH} / ${MAX_HEALTH} │
 └───────────────────────────────┘`);
+}
 
+
+function handleDeath() {
+  if (ENEMY_HEALTH <= 0) {
+    console.log(`
+╔══════════════════════════════════════════════════════╗
+║               🏆 VICTORY IS YOURS! 🏆                ║
+╠══════════════════════════════════════════════════════╣
+║  You defeated the Goblin and forged your legacy!     ║
+╚══════════════════════════════════════════════════════╝
+`);
+    return true;
+  }
+
+  if (PLAYER_HEALTH <= 0) {
+    console.log(`
+╔══════════════════════════════════════════════════════╗
+║                  💀 YOU DIED! 💀                     ║
+╠══════════════════════════════════════════════════════╣
+║  The Goblin overwhelmed you in battle...             ║
+╚══════════════════════════════════════════════════════╝
+`);
+    return true;
+  }
+
+  return false;
+}
+
+function handlePlayerChoice(choice) {
+  if (choice === "1") {
+    ENEMY_HEALTH -= DAMAGE_AMOUNT;
+  } else if (choice === "2") {
+    PLAYER_HEALTH += REVIVE_HEALTH;
+  } else {
+    console.log("Invalid choice");
+    
+  }
+}
+
+function enemychoice() {
+  let enemyChoice = Math.floor(Math.random() * 10) + 1;
+  return enemyChoice;
+}
+
+function handleEnemyChoice(choice){
+  if (choice < 5) {
+    PLAYER_HEALTH -= DAMAGE_AMOUNT;
+  } else if (choice > 5) {
+    ENEMY_HEALTH += REVIVE_HEALTH;
+  } else {
+    // console.log("Enemy missed the attack");
+  }
+}
+
+while (true) {
+  //renders score after calculating health changes
+  renderScore();
+
+  //user input handiling
   const choice = prompt(`Select: (1) Attack (2) Revive (3) Exit : `);
 
   // Exit handiling
-  if (choice === "exit" || choice === null) {
+  if (choice === "exit" || choice === null || choice === "3") {
     break;
   }
 
@@ -71,45 +130,17 @@ while (true) {
   }
 
   // player choice handiling
-  if (choice === "1") {
-    enemyHealth -= damageAmount;
-  } else if (choice === "2") {
-    playerHealth += reviveHealth;
-  } else {
-    console.log("Invalid choice");
-    continue;
-  }
+  handlePlayerChoice(choice)
 
   //Enemy choice
-  let enemyChoice = Math.floor(Math.random() * 10) + 1;
-  if (enemyChoice < 5) {
-    playerHealth -= damageAmount;
-  } else if (enemyChoice > 5) {
-    enemyHealth += reviveHealth;
-  } else {
-    // console.log("Enemy missed the attack");
-  }
+  let enemyChoice = enemychoice()
+  handleEnemyChoice(enemyChoice)
 
   // Death handilding
-  if (enemyHealth <= 0) {
-    console.log(`
-╔══════════════════════════════════════════════════════╗
-║               🏆 VICTORY IS YOURS! 🏆                ║
-╠══════════════════════════════════════════════════════╣
-║  You defeated the Goblin and forged your legacy!     ║
-╚══════════════════════════════════════════════════════╝
-`);
-    break;
-  }
+  const isGameOver = handleDeath();
 
-  if (playerHealth <= 0) {
-    console.log(`
-╔══════════════════════════════════════════════════════╗
-║                  💀 YOU DIED! 💀                     ║
-╠══════════════════════════════════════════════════════╣
-║  The Goblin overwhelmed you in battle...             ║
-╚══════════════════════════════════════════════════════╝
-`);
+  if (isGameOver) {
     break;
   }
 }
+
