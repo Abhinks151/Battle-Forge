@@ -5,6 +5,11 @@ const prompt = promptSync();
 let PLAYER_HEALTH = 100;
 let ENEMY_HEALTH = 100;
 
+const DELAY = 500;
+
+const PLAYER_MESSAGE = "Attacking enemy";
+const ENEMY_MESSAGE = "Attacking player";
+
 const DAMAGE_AMOUNT = 10;
 const REVIVE_HEALTH = 5;
 
@@ -58,7 +63,6 @@ function renderScore() {
 └───────────────────────────────┘`);
 }
 
-
 function handleDeath() {
   if (ENEMY_HEALTH <= 0) {
     console.log(`
@@ -88,11 +92,12 @@ function handleDeath() {
 function handlePlayerChoice(choice) {
   if (choice === "1") {
     ENEMY_HEALTH -= DAMAGE_AMOUNT;
+    return true;
   } else if (choice === "2") {
     PLAYER_HEALTH += REVIVE_HEALTH;
+    return true;
   } else {
-    console.log("Invalid choice");
-    
+    return false;
   }
 }
 
@@ -101,8 +106,8 @@ function enemychoice() {
   return enemyChoice;
 }
 
-function handleEnemyChoice(choice){
-  if (choice < 5) {
+function handleEnemyChoice(choice) {
+  if (choice <= 5) {
     PLAYER_HEALTH -= DAMAGE_AMOUNT;
   } else if (choice > 5) {
     ENEMY_HEALTH += REVIVE_HEALTH;
@@ -111,36 +116,60 @@ function handleEnemyChoice(choice){
   }
 }
 
-while (true) {
-  //renders score after calculating health changes
-  renderScore();
+function sleep(ms, message) {
+  if (message) console.log(message);
 
-  //user input handiling
-  const choice = prompt(`Select: (1) Attack (2) Revive (3) Exit : `);
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  // Exit handiling
-  if (choice === "exit" || choice === null || choice === "3") {
-    break;
-  }
+async function game() {
+  while (true) {
+    //renders score after calculating health changes
+    renderScore();
 
-  // clear screen handiling
-  if (choice === "clear") {
-    console.clear();
-    continue;
-  }
+    //user input handiling
+    const choice = prompt(`Select: (1) Attack (2) Revive (3) Exit : `);
 
-  // player choice handiling
-  handlePlayerChoice(choice)
+    // Exit handiling
+    if (choice === "exit" || choice === null || choice === "3") {
+      break;
+    }
 
-  //Enemy choice
-  let enemyChoice = enemychoice()
-  handleEnemyChoice(enemyChoice)
+    // clear screen handiling
+    if (choice === "clear") {
+      console.clear();
+      continue;
+    }
 
-  // Death handilding
-  const isGameOver = handleDeath();
+    // player choice handiling
+    const isValidPlayerChoice = handlePlayerChoice(choice);
 
-  if (isGameOver) {
-    break;
+    if (!isValidPlayerChoice) {
+      console.log("Invalid choice ! Please choose from the following ");
+      continue;
+    }
+
+    renderScore();
+
+    if (handleDeath()) {
+      break;
+    }
+
+    await sleep(DELAY,PLAYER_MESSAGE);
+
+    //Enemy choice
+    let enemyChoice = enemychoice();
+    handleEnemyChoice(enemyChoice);
+
+    // Death handilding
+    renderScore();
+
+    if (handleDeath()) {
+      break;
+    }
+
+    await sleep(DELAY, ENEMY_MESSAGE);
   }
 }
 
+game();
