@@ -1,9 +1,12 @@
 import promptSync from "prompt-sync";
+import Character from "./Character.js";
 
 const prompt = promptSync();
 
-let PLAYER_HEALTH = 100;
-let ENEMY_HEALTH = 100;
+
+const player = new Character("Abhin", 100);
+const enemy = new Character("Archer", 100);
+
 
 const DELAY = 500;
 
@@ -31,14 +34,14 @@ const MAX_HEALTH = 100;
 
 function renderScore() {
   // update  hp bar
-  const enemyPercentage = ENEMY_HEALTH / MAX_HEALTH;
+  const enemyPercentage = enemy.getHealth() / MAX_HEALTH;
 
   const enemyFilled = Math.round(enemyPercentage * BAR_LENGTH);
   const enemyEmpty = BAR_LENGTH - enemyFilled;
 
   const enemyBar = "█".repeat(enemyFilled) + "░".repeat(enemyEmpty);
 
-  const playerPercentage = PLAYER_HEALTH / MAX_HEALTH;
+  const playerPercentage = player.getHealth() / MAX_HEALTH;
 
   const filled = Math.round(playerPercentage * BAR_LENGTH);
   const playerEmpty = BAR_LENGTH - filled;
@@ -53,18 +56,18 @@ function renderScore() {
 ┌───────────────────────────────┐
 │            ENEMY              │
 │                               │
-│ HP  ${enemyBar}  ${ENEMY_HEALTH} / ${MAX_HEALTH} │
+│ HP  ${enemyBar}  ${enemy.getHealth()} / ${MAX_HEALTH} │
 └───────────────────────────────┘
              ⚔ 
 ┌───────────────────────────────┐
 │            YOU                │
 │                               │
-│ HP  ${playerBar}  ${PLAYER_HEALTH} / ${MAX_HEALTH} │
+│ HP  ${playerBar}  ${player.getHealth()} / ${MAX_HEALTH} │
 └───────────────────────────────┘`);
 }
 
 function handleDeath() {
-  if (ENEMY_HEALTH <= 0) {
+  if (enemy.getHealth() <= 0) {
     console.log(`
 ╔══════════════════════════════════════════════════════╗
 ║               🏆 VICTORY IS YOURS! 🏆                ║
@@ -75,7 +78,7 @@ function handleDeath() {
     return true;
   }
 
-  if (PLAYER_HEALTH <= 0) {
+  if (player.getHealth() <= 0) {
     console.log(`
 ╔══════════════════════════════════════════════════════╗
 ║                  💀 YOU DIED! 💀                     ║
@@ -91,10 +94,10 @@ function handleDeath() {
 
 function handlePlayerChoice(choice) {
   if (choice === "1") {
-    ENEMY_HEALTH -= DAMAGE_AMOUNT;
+    enemy.applyDamage(DAMAGE_AMOUNT);
     return true;
   } else if (choice === "2") {
-    PLAYER_HEALTH += REVIVE_HEALTH;
+    player.applyHeal(REVIVE_HEALTH);
     return true;
   } else {
     return false;
@@ -108,11 +111,9 @@ function enemychoice() {
 
 function handleEnemyChoice(choice) {
   if (choice <= 5) {
-    PLAYER_HEALTH -= DAMAGE_AMOUNT;
+    player.applyDamage(DAMAGE_AMOUNT);
   } else if (choice > 5) {
-    ENEMY_HEALTH += REVIVE_HEALTH;
-  } else {
-    // console.log("Enemy missed the attack");
+    enemy.applyHeal(REVIVE_HEALTH);
   }
 }
 
@@ -155,7 +156,7 @@ async function game() {
       break;
     }
 
-    await sleep(DELAY,PLAYER_MESSAGE);
+    await sleep(DELAY, PLAYER_MESSAGE);
 
     //Enemy choice
     let enemyChoice = enemychoice();
