@@ -8,10 +8,12 @@ class Character {
 
   applyDamage(amount) {
     this.#health -= amount;
+    if (this.#health < 0) this.#health = 0;
   }
 
   applyHeal(amount) {
     this.#health += amount;
+    if (this.#health > 100) this.#health = 100;
   }
 
   getHealth() {
