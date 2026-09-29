@@ -3,10 +3,8 @@ import Character from "./Character.js";
 
 const prompt = promptSync();
 
-
 const player = new Character("Abhin", 100);
 const enemy = new Character("Archer", 100);
-
 
 const DELAY = 500;
 
@@ -18,6 +16,7 @@ const REVIVE_HEALTH = 5;
 
 const BAR_LENGTH = 15;
 const MAX_HEALTH = 100;
+const BOX_WIDTH = 31;
 
 // console.log(`
 // ┌───────────────────────────────┐
@@ -32,37 +31,53 @@ const MAX_HEALTH = 100;
 // │ HP  ${playerBar}  ${PLAYER_HEALTH} / ${max} │
 // └───────────────────────────────┘`);
 
+function centerText(text, width) {
+  const totalPadding = width - text.length;
+  const leftPadding = Math.floor(totalPadding / 2);
+  const rightPadding = totalPadding - leftPadding;
+
+  return " ".repeat(leftPadding) + text + " ".repeat(rightPadding);
+}
+
+function createHealthBar(health) {
+  const percentage = health / MAX_HEALTH;
+
+  const filled = Math.round(percentage * BAR_LENGTH);
+  const empty = BAR_LENGTH - filled;
+
+  return "█".repeat(filled) + "░".repeat(empty);
+}
+
+function createHPLine(character) {
+  const healthBar = createHealthBar(character.getHealth());
+
+  const healthText = String(character.getHealth()).padStart(3);
+
+  const content = `HP  ${healthBar}  ${healthText} / ${MAX_HEALTH}`;
+
+  return content.padEnd(BOX_WIDTH);
+}
+
 function renderScore() {
-  // update  hp bar
-  const enemyPercentage = enemy.getHealth() / MAX_HEALTH;
+  const enemyName = centerText(enemy.getName(), BOX_WIDTH);
+  const playerName = centerText(player.getName(), BOX_WIDTH);
 
-  const enemyFilled = Math.round(enemyPercentage * BAR_LENGTH);
-  const enemyEmpty = BAR_LENGTH - enemyFilled;
+  const enemyHP = createHPLine(enemy);
+  const playerHP = createHPLine(player);
 
-  const enemyBar = "█".repeat(enemyFilled) + "░".repeat(enemyEmpty);
-
-  const playerPercentage = player.getHealth() / MAX_HEALTH;
-
-  const filled = Math.round(playerPercentage * BAR_LENGTH);
-  const playerEmpty = BAR_LENGTH - filled;
-
-  const playerBar = "█".repeat(filled) + "░".repeat(playerEmpty);
-
-  //Clear the terminal before render
   console.clear();
 
-  //render the score board
   console.log(`
 ┌───────────────────────────────┐
-│            ENEMY              │
+│${enemyName}│
 │                               │
-│ HP  ${enemyBar}  ${enemy.getHealth()} / ${MAX_HEALTH} │
+│${enemyHP}│
 └───────────────────────────────┘
-             ⚔ 
+             ⚔
 ┌───────────────────────────────┐
-│            YOU                │
+│${playerName}│
 │                               │
-│ HP  ${playerBar}  ${player.getHealth()} / ${MAX_HEALTH} │
+│${playerHP}│
 └───────────────────────────────┘`);
 }
 
