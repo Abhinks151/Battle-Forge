@@ -6,8 +6,10 @@ import { sleep } from "./utils/utils.js";
 
 const prompt = promptSync();
 
-const player = new Character("Abhin", 100);
-const enemy = new Character("Archer", 100);
+const MAX_HEALTH = 100;
+
+const player = new Character("Abhin", MAX_HEALTH);
+const enemy = new Character("Archer", MAX_HEALTH);
 
 const DELAY = 500;
 
@@ -29,17 +31,20 @@ function handlePlayerChoice(choice) {
   }
 }
 
-function enemychoice() {
-  let enemyChoice = Math.floor(Math.random() * 10) + 1;
-  return enemyChoice;
-}
 
-function handleEnemyChoice(choice) {
-  if (choice <= 5) {
+function handleEnemyChoice() {
+  const uilityChoice = calcualteHealthUtility();
+
+  if (uilityChoice <= 0.5) {
     player.applyDamage(DAMAGE_AMOUNT);
-  } else if (choice > 5) {
+  } else {
     enemy.applyHeal(REVIVE_HEALTH);
   }
+}
+
+function calcualteHealthUtility() {
+  const health = enemy.getHealth() / MAX_HEALTH;
+  return 1 - health;
 }
 
 async function game() {
@@ -78,8 +83,7 @@ async function game() {
     await sleep(DELAY, PLAYER_MESSAGE);
 
     // Enemy choice
-    let enemyChoice = enemychoice();
-    handleEnemyChoice(enemyChoice);
+    handleEnemyChoice();
 
     // Death handling
     renderScore(player, enemy);
