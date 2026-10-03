@@ -12,9 +12,32 @@ import {
 
 const prompt = promptSync();
 
-
 const player = new Character("Abhin", MAX_HEALTH);
 const enemy = new Character("Archer", MAX_HEALTH);
+
+class AttackCards {
+  constructor(name, damage) {
+    this.name = name;
+    this.damage = damage;
+  }
+}
+
+const Pistol = new AttackCards("Pistol",10)
+
+
+
+class HealCards {
+  constructor(name, heal) {
+    this.name = name;
+    this.heal = heal;
+  }
+}
+
+const Heal = new HealCards("Basic heal",5)
+
+
+const cards = [Pistol,Heal]
+
 
 
 async function game() {
@@ -23,14 +46,16 @@ async function game() {
     renderScore(player, enemy);
 
     // user input handling
-    console.log(`
-┌───────────────┐  ┌───────────────┐  
-│    Attack     │  │     Heal      │
-│   --------    │  │    ------     │
-│   Damage -10  │  │    Heal +5    │
-│   (Choose 1)  │  │   (Choose 2)  │
-└───────────────┘  └───────────────┘
-    `);
+    for(let i =0;i<cards.length;i++){
+      console.log(`
+        ┌───────────────┐
+        │    ${cards[i].name}    │
+        │   --------    │
+        │   ${cards[i].damage || cards[i].heal}    │
+        │   (Choose ${i + 1})  │
+        └───────────────┘
+      `);
+    }
 
     const choice = prompt(`Select move: 1, 2, or 3(Exit) : `);
 
